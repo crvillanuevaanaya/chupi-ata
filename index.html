@@ -1,7 +1,534 @@
 <!DOCTYPE html>
-<html>
-<body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chupiñata - Piñatas Personalizadas con Amor</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuración de la fuente Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fff; /* Fondo blanco puro */
+            color: #333; /* Texto oscuro */
+        }
+        /* Estilos personalizados para el logo SVG */
+        .logo-svg {
+            width: 45px;
+            height: 45px;
+            fill: currentColor; /* El color del SVG se adaptará al color del texto circundante */
+        }
+        .section-title {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 8px;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 60%;
+            height: 3px;
+            background-color: #FF6B6B; /* Un toque de color divertido */
+            border-radius: 9999px;
+        }
+        .btn-primary {
+            background-color: #FF6B6B; /* Rojo coral */
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #EE5A5A; /* Rojo coral más oscuro al pasar el ratón */
+        }
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Estilos para el carrito de compras */
+        #cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -320px; /* Oculto por defecto */
+            width: 320px;
+            height: 100%;
+            background-color: #fefefe;
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease-in-out;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+        #cart-sidebar.open {
+            right: 0; /* Visible */
+        }
+        #cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            display: none; /* Oculto por defecto */
+        }
+        #cart-overlay.open {
+            display: block; /* Visible */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Barra de Navegación -->
+    <nav class="bg-white shadow-sm py-4 px-6 md:px-12 fixed w-full z-10 top-0">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- Logo de la Empresa -->
+            <a href="#" class="flex items-center space-x-2 text-gray-800 hover:text-gray-900 transition duration-300">
+                <!-- SVG del Logo: Una estrella de piñata estilizada y minimalista -->
+                <svg class="logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 18.33l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2zM12 4.72L9.24 10.1l-6.04.88 4.37 4.26-.98 5.76L12 18.33l5.41 2.85-.98-5.76 4.37-4.26-6.04-.88L12 4.72z" fill="#FF6B6B"/>
+                    <circle cx="12" cy="12" r="2" fill="#FFD166"/> <!-- Centro de la piñata -->
+                </svg>
+                <span class="text-3xl font-extrabold text-gray-900">Chupiñata</span>
+            </a>
+
+            <!-- Menú de Navegación (oculto en móviles, visible en pantallas grandes) -->
+            <div class="hidden md:flex space-x-8 text-lg">
+                <a href="#inicio" class="text-gray-600 hover:text-gray-900 transition duration-300 font-medium">Inicio</a>
+                <a href="#servicios" class="text-gray-600 hover:text-gray-900 transition duration-300 font-medium">Servicios</a>
+                <a href="#tienda" class="text-gray-600 hover:text-gray-900 transition duration-300 font-medium">Tienda</a>
+                <a href="#portafolio" class="text-gray-600 hover:text-gray-900 transition duration-300 font-medium">Portafolio</a>
+                <a href="#contacto" class="text-gray-600 hover:text-gray-900 transition duration-300 font-medium">Contacto</a>
+            </div>
+
+            <!-- Botón de Menú para Móviles (Hamburguesa) y Botón de Carrito -->
+            <div class="flex items-center space-x-4">
+                <button id="cart-button" class="p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 relative">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </button>
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menú Móvil Desplegable -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2 text-center">
+            <a href="#inicio" class="block py-2 text-gray-700 hover:bg-gray-100 rounded-md font-medium">Inicio</a>
+            <a href="#servicios" class="block py-2 text-gray-700 hover:bg-gray-100 rounded-md font-medium">Servicios</a>
+            <a href="#tienda" class="block py-2 text-gray-700 hover:bg-gray-100 rounded-md font-medium">Tienda</a>
+            <a href="#portafolio" class="block py-2 text-gray-700 hover:bg-gray-100 rounded-md font-medium">Portafolio</a>
+            <a href="#contacto" class="block py-2 text-gray-700 hover:bg-gray-100 rounded-md font-medium">Contacto</a>
+        </div>
+    </nav>
+
+    <!-- Sección Hero / Inicio -->
+    <section id="inicio" class="relative bg-gradient-to-r from-pink-400 to-red-500 text-white flex items-center justify-center min-h-screen pt-16">
+        <div class="absolute inset-0 bg-cover bg-center opacity-40" style="background-image: url('https://placehold.co/1920x1080/FF6B6B/FFFFFF?text=Fondo+Confeti+Abstracto');"></div>
+        <div class="relative z-10 text-center px-4 py-16 max-w-4xl mx-auto">
+            <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6 animate-fade-in-up drop-shadow-lg">
+                ¡Tu Fiesta, Tu Piñata Perfecta!
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 opacity-90 animate-fade-in-up delay-200">
+                En Chupiñata, creamos piñatas personalizadas que hacen de cada celebración un momento inolvidable.
+            </p>
+            <a href="#tienda" class="inline-block btn-primary hover:shadow-lg transition duration-300 py-3 px-8 rounded-full text-lg font-semibold animate-fade-in-up delay-400">
+                Explora la Tienda
+            </a>
+        </div>
+    </section>
+
+    <!-- Sección Sobre Nosotros (Opcional, pero añade personalidad) -->
+    <section id="sobre-nosotros" class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-6 md:px-12 text-center max-w-3xl">
+            <h2 class="text-4xl font-bold mb-12 section-title mx-auto">Sobre Chupiñata</h2>
+            <p class="text-lg text-gray-700 leading-relaxed">
+                Somos un equipo apasionado por transformar tus ideas en piñatas únicas y llenas de alegría. Desde personajes favoritos hasta diseños temáticos y personalizados, cada piñata es elaborada a mano con dedicación y los mejores materiales para garantizar la diversión y la seguridad. ¡En Chupiñata, tu imaginación es el límite!
+            </p>
+        </div>
+    </section>
+
+    <!-- Sección de Servicios -->
+    <section id="servicios" class="py-16 md:py-24 bg-gray-50">
+        <div class="container mx-auto px-6 md:px-12">
+            <h2 class="text-4xl font-bold text-center mb-12 section-title mx-auto">Nuestros Servicios</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Tarjeta de Servicio 1 -->
+                <div class="bg-white p-8 rounded-xl shadow-md card-shadow transition duration-300 transform hover:-translate-y-1">
+                    <div class="flex items-center justify-center w-16 h-16 bg-red-500 text-white rounded-full mb-6 mx-auto">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-center mb-4">Diseño 100% Personalizado</h3>
+                    <p class="text-gray-700 text-center leading-relaxed">
+                        Crea la piñata de tus sueños. Desde personajes de caricaturas hasta logotipos de empresas, ¡lo hacemos realidad!
+                    </p>
+                </div>
+                <!-- Tarjeta de Servicio 2 -->
+                <div class="bg-white p-8 rounded-xl shadow-md card-shadow transition duration-300 transform hover:-translate-y-1">
+                    <div class="flex items-center justify-center w-16 h-16 bg-yellow-500 text-white rounded-full mb-6 mx-auto">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-center mb-4">Variedad de Tamaños</h3>
+                    <p class="text-gray-700 text-center leading-relaxed">
+                        Pequeñas para centros de mesa, medianas para fiestas íntimas o gigantes para grandes eventos. Tú eliges.
+                    </p>
+                </div>
+                <!-- Tarjeta de Servicio 3 -->
+                <div class="bg-white p-8 rounded-xl shadow-md card-shadow transition duration-300 transform hover:-translate-y-1">
+                    <div class="flex items-center justify-center w-16 h-16 bg-green-500 text-white rounded-full mb-6 mx-auto">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-center mb-4">Temáticas para Cualquier Evento</h3>
+                    <p class="text-gray-700 text-center leading-relaxed">
+                        Cumpleaños, bodas, baby showers, eventos corporativos... ¡siempre hay una piñata perfecta!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Tienda -->
+    <section id="tienda" class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-6 md:px-12">
+            <h2 class="text-4xl font-bold text-center mb-12 section-title mx-auto">Nuestra Tienda de Piñatas</h2>
+            <p class="text-lg text-gray-700 text-center mb-12 max-w-2xl mx-auto">
+                Explora nuestra selección de piñatas listas para llevar o inspírate para tu diseño personalizado. ¡Cada una hecha con cariño!
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="product-list">
+                <!-- Los productos se cargarán aquí con JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Portafolio -->
+    <section id="portafolio" class="py-16 md:py-24 bg-gray-50">
+        <div class="container mx-auto px-6 md:px-12">
+            <h2 class="text-4xl font-bold text-center mb-12 section-title mx-auto">Nuestro Portafolio</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Ítem del Portafolio 1 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition duration-300">
+                    <img src="https://placehold.co/600x400/FFD166/333333?text=Piñata+Personaje" alt="Piñata de Personaje Favorito" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Piñata de Personaje</h3>
+                        <p class="text-gray-700 text-sm">Tu héroe o personaje favorito, hecho piñata.</p>
+                    </div>
+                </div>
+                <!-- Ítem del Portafolio 2 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition duration-300">
+                    <img src="https://placehold.co/600x400/FF6B6B/FFFFFF?text=Piñata+Numero" alt="Piñata de Número de Cumpleaños" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Piñata de Número</h3>
+                        <p class="text-gray-700 text-sm">Celebra cada año con un número gigante y divertido.</p>
+                    </div>
+                </div>
+                <!-- Ítem del Portafolio 3 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition duration-300">
+                    <img src="https://placehold.co/600x400/66BB6A/FFFFFF?text=Piñata+Tematica" alt="Piñata Temática de Fiesta" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Piñata Temática</h3>
+                        <p class="text-gray-700 text-sm">Perfecta para cualquier tema de fiesta: unicornios, dinosaurios, etc.</p>
+                    </div>
+                </div>
+                <!-- Ítem del Portafolio 4 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition duration-300">
+                    <img src="https://placehold.co/600x400/6699FF/FFFFFF?text=Piñata+Logo" alt="Piñata con Logo Corporativo" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Piñata Corporativa</h3>
+                        <p class="text-gray-700 text-sm">Ideal para eventos de empresa, con tu logo o producto.</p>
+                    </div>
+                </div>
+                <!-- Ítem del Portafolio 5 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition duration-300">
+                    <img src="https://placehold.co/600x400/FF9966/FFFFFF?text=Piñata+Boda" alt="Piñata para Bodas o Aniversarios" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Piñata de Boda</h3>
+                        <p class="text-gray-700 text-sm">Un toque divertido y original para tu gran día.</p>
+                    </div>
+                </div>
+                <!-- Ítem del Portafolio 6 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition duration-300">
+                    <img src="https://placehold.co/600x400/CC66FF/FFFFFF?text=Piñata+Abstracta" alt="Piñata con Diseño Abstracto" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Diseño Abstracto</h3>
+                        <p class="text-gray-700 text-sm">Formas y colores únicos para una piñata artística.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Contacto -->
+    <section id="contacto" class="py-16 md:py-24 bg-gray-50">
+        <div class="container mx-auto px-6 md:px-12">
+            <h2 class="text-4xl font-bold text-center mb-12 section-title mx-auto">¡Hablemos de tu Piñata!</h2>
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-md">
+                <p class="text-lg text-gray-700 text-center mb-8">
+                    ¿Listo para encargar tu piñata personalizada? Contáctanos y cuéntanos tu idea.
+                </p>
+                <form class="space-y-6">
+                    <div>
+                        <label for="name" class="block text-gray-800 text-lg font-medium mb-2">Tu Nombre</label>
+                        <input type="text" id="name" name="name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-300 focus:border-transparent transition duration-200" placeholder="Nombre Completo">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-gray-800 text-lg font-medium mb-2">Tu Correo Electrónico</label>
+                        <input type="email" id="email" name="email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-300 focus:border-transparent transition duration-200" placeholder="tu.email@ejemplo.com">
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-gray-800 text-lg font-medium mb-2">Número de Teléfono (Opcional)</label>
+                        <input type="tel" id="phone" name="phone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-300 focus:border-transparent transition duration-200" placeholder="+52 123 456 7890">
+                    </div>
+                    <div>
+                        <label for="message" class="block text-gray-800 text-lg font-medium mb-2">Cuéntanos tu Idea de Piñata</label>
+                        <textarea id="message" name="message" rows="5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-300 focus:border-transparent transition duration-200" placeholder="Describe la temática, tamaño, fecha del evento..."></textarea>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn-primary hover:shadow-lg transition duration-300 py-3 px-10 rounded-full text-lg font-semibold">
+                            Enviar Solicitud
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="mt-12 text-center text-gray-700">
+                <p class="text-lg mb-2">También puedes contactarnos directamente:</p>
+                <p class="text-xl font-semibold">hola@chupinata.com</p>
+                <p class="text-xl font-semibold">+52 55 9876 5432</p>
+                <p class="text-xl font-semibold">Síguenos en redes sociales:</p>
+                <div class="flex justify-center space-x-6 mt-4">
+                    <a href="#" class="text-gray-600 hover:text-pink-500 transition duration-300">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg>
+                    </a>
+                    <a href="#" class="text-gray-600 hover:text-pink-500 transition duration-300">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12.315 2c2.43 0 2.792.01 3.249.064.437.054.673.117.862.21.189.093.356.219.517.38.16.161.287.328.38.517.093.189.156.425.21.862.054.457.064.819.064 3.249v1.093c0 2.43-.01 2.792-.064 3.249-.054.437-.117.673-.21.862-.093.189-.219.356-.38.517-.161.16-.328.287-.517.38-.189.093-.425.156-.862.21-.457.054-.819.064-3.249.064h-1.093c-2.43 0-2.792-.01-3.249-.064-.437-.054-.673-.117-.862-.21-.189-.093-.356-.219-.517-.38-.16-.161-.287-.328-.38-.517-.093-.189-.156-.425-.21-.862-.054-.457-.064-.819-.064-3.249v-1.093c0-2.43.01-2.792.064-3.249.054-.437.117-.673.21-.862.093-.189.219-.356.38-.517.16-.161.328-.287.517-.38.189-.093.425-.156.862-.21.457-.054.819-.064 3.249-.064h1.093zM12 7.21c-2.652 0-4.79 2.138-4.79 4.79s2.138 4.79 4.79 4.79 4.79-2.138 4.79-4.79S14.652 7.21 12 7.21zm0 7.337c-1.408 0-2.547-1.14-2.547-2.547s1.14-2.547 2.547-2.547 2.547 1.14 2.547 2.547-1.14 2.547-2.547 2.547zm5.338-5.338a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" clip-rule="evenodd" /></svg>
+                    </a>
+                    <a href="#" class="text-gray-600 hover:text-pink-500 transition duration-300">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M.05 11.405C1.947 9.388 3.005 6.71 3.005 3.632c0-1.309.28-2.559.782-3.632H.05v11.405zM23.95 11.405V0h-3.784c.502 1.073.782 2.323.782 3.632 0 3.078-1.058 5.756-2.955 7.773h5.907zM12 24c5.176 0 9.39-4.214 9.39-9.39 0-1.309-.28-2.559-.782-3.632H12v13.022zM12 0v11.405H.05C.552 10.332.832 9.082.832 7.773 0 4.695 1.058 2.017 2.955 0H12z" /></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pie de Página -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="container mx-auto px-6 md:px-12 text-center">
+            <p class="text-lg mb-4">Chupiñata - ¡Haz que tu fiesta explote de alegría!</p>
+            <p class="text-sm text-gray-500">&copy; 2025 Chupiñata. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Carrito de Compras (Sidebar) -->
+    <div id="cart-sidebar" class="p-6 flex flex-col justify-between">
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Tu Carrito</h3>
+                <button id="close-cart-button" class="text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="cart-items" class="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)] pb-4">
+                <!-- Los ítems del carrito se insertarán aquí -->
+                <p id="empty-cart-message" class="text-gray-500 text-center">Tu carrito está vacío.</p>
+            </div>
+        </div>
+        <div class="border-t border-gray-200 pt-6 mt-6">
+            <div class="flex justify-between items-center text-xl font-bold mb-4">
+                <span>Total:</span>
+                <span id="cart-total">$0.00</span>
+            </div>
+            <button id="checkout-button" class="w-full btn-primary py-3 rounded-lg text-lg font-semibold shadow-md">
+                Proceder al Pago (Simulado)
+            </button>
+        </div>
+    </div>
+
+    <!-- Overlay para el carrito -->
+    <div id="cart-overlay"></div>
+
+    <script>
+        // Datos de productos (simulados)
+        const products = [
+            { id: 1, name: 'Piñata Estrella Clásica', price: 25.00, image: 'https://placehold.co/600x400/FFD166/333333?text=Piñata+Estrella' },
+            { id: 2, name: 'Piñata Dinosaurio T-Rex', price: 35.00, image: 'https://placehold.co/600x400/66BB6A/FFFFFF?text=Piñata+Dino' },
+            { id: 3, name: 'Piñata Unicornio Mágico', price: 30.00, image: 'https://placehold.co/600x400/CC66FF/FFFFFF?text=Piñata+Unicornio' },
+            { id: 4, name: 'Piñata Número 5', price: 28.00, image: 'https://placehold.co/600x400/FF6B6B/FFFFFF?text=Piñata+Num5' },
+            { id: 5, name: 'Piñata Superhéroe', price: 32.00, image: 'https://placehold.co/600x400/6699FF/FFFFFF?text=Piñata+Heroe' },
+            { id: 6, name: 'Piñata Princesa', price: 30.00, image: 'https://placehold.co/600x400/FF9966/FFFFFF?text=Piñata+Princesa' },
+            { id: 7, name: 'Piñata Llama Divertida', price: 29.00, image: 'https://placehold.co/600x400/99CCFF/333333?text=Piñata+Llama' },
+            { id: 8, name: 'Piñata Cohete Espacial', price: 33.00, image: 'https://placehold.co/600x400/333333/FFFFFF?text=Piñata+Cohete' },
+        ];
+
+        let cart = []; // Array para almacenar los ítems del carrito
+
+        const productListDiv = document.getElementById('product-list');
+        const cartCountSpan = document.getElementById('cart-count');
+        const cartItemsDiv = document.getElementById('cart-items');
+        const cartTotalSpan = document.getElementById('cart-total');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const cartOverlay = document.getElementById('cart-overlay');
+        const cartButton = document.getElementById('cart-button');
+        const closeCartButton = document.getElementById('close-cart-button');
+        const checkoutButton = document.getElementById('checkout-button');
+
+        // Función para renderizar los productos en la tienda
+        function renderProducts() {
+            productListDiv.innerHTML = ''; // Limpiar la lista antes de renderizar
+            products.forEach(product => {
+                const productCard = `
+                    <div class="bg-gray-50 rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition duration-300">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-56 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">${product.name}</h3>
+                            <p class="text-gray-700 text-sm mb-4">Piñata de tamaño mediano, ideal para cualquier fiesta.</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-red-500">$${product.price.toFixed(2)}</span>
+                                <button class="add-to-cart-btn btn-primary py-2 px-4 rounded-full text-sm font-semibold" data-product-id="${product.id}">
+                                    Añadir al Carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productListDiv.innerHTML += productCard;
+            });
+
+            // Añadir event listeners a los botones "Añadir al Carrito"
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const productId = parseInt(event.target.dataset.productId);
+                    addToCart(productId);
+                });
+            });
+        }
+
+        // Función para añadir un producto al carrito
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                const existingItem = cart.find(item => item.id === productId);
+                if (existingItem) {
+                    existingItem.quantity++;
+                } else {
+                    cart.push({ ...product, quantity: 1 });
+                }
+                updateCartDisplay();
+            }
+        }
+
+        // Función para actualizar la visualización del carrito
+        function updateCartDisplay() {
+            cartItemsDiv.innerHTML = ''; // Limpiar el carrito antes de actualizar
+            let total = 0;
+
+            if (cart.length === 0) {
+                emptyCartMessage.style.display = 'block';
+            } else {
+                emptyCartMessage.style.display = 'none';
+                cart.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    const cartItemHtml = `
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                            <div class="flex items-center space-x-3">
+                                <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover">
+                                <div>
+                                    <h4 class="font-semibold text-gray-800">${item.name}</h4>
+                                    <p class="text-sm text-gray-600">$${item.price.toFixed(2)} x ${item.quantity}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-bold text-gray-800">$${itemTotal.toFixed(2)}</span>
+                                <button class="remove-from-cart-btn text-red-500 hover:text-red-700 p-1 rounded-full" data-product-id="${item.id}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    cartItemsDiv.innerHTML += cartItemHtml;
+                });
+            }
+
+            cartTotalSpan.textContent = `$${total.toFixed(2)}`;
+            cartCountSpan.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+            // Añadir event listeners a los botones "Eliminar del Carrito"
+            document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const productId = parseInt(event.target.dataset.productId);
+                    removeFromCart(productId);
+                });
+            });
+        }
+
+        // Función para eliminar un producto del carrito
+        function removeFromCart(productId) {
+            const itemIndex = cart.findIndex(item => item.id === productId);
+            if (itemIndex > -1) {
+                if (cart[itemIndex].quantity > 1) {
+                    cart[itemIndex].quantity--;
+                } else {
+                    cart.splice(itemIndex, 1); // Eliminar el ítem si la cantidad es 1
+                }
+                updateCartDisplay();
+            }
+        }
+
+        // Event Listeners para el menú móvil
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.querySelectorAll('#mobile-menu a').forEach(item => {
+            item.addEventListener('click', () => {
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+
+        // Event Listeners para el carrito
+        cartButton.addEventListener('click', () => {
+            cartSidebar.classList.add('open');
+            cartOverlay.classList.add('open');
+        });
+
+        closeCartButton.addEventListener('click', () => {
+            cartSidebar.classList.remove('open');
+            cartOverlay.classList.remove('open');
+        });
+
+        cartOverlay.addEventListener('click', () => {
+            cartSidebar.classList.remove('open');
+            cartOverlay.classList.remove('open');
+        });
+
+        checkoutButton.addEventListener('click', () => {
+            if (cart.length > 0) {
+                // En un sitio real, aquí se redirigiría a una página de pago o se iniciaría un proceso de backend.
+                alert('¡Gracias por tu compra! (Este es un proceso de pago simulado)');
+                cart = []; // Vaciar el carrito después de la "compra"
+                updateCartDisplay();
+                cartSidebar.classList.remove('open');
+                cartOverlay.classList.remove('open');
+            } else {
+                alert('Tu carrito está vacío. Añade algunos productos antes de proceder al pago.');
+            }
+        });
+
+        // Inicializar la tienda y el carrito al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            updateCartDisplay();
+        });
+    </script>
+
 </body>
 </html>
